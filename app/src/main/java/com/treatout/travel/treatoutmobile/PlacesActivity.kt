@@ -7,24 +7,20 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.MenuItem
-import android.view.View
-import android.widget.AdapterView
 import android.widget.Toast
-import com.google.gson.Gson
 import com.treatout.travel.treatoutmobile.Adapters.PlacesRecAdapter
 import com.treatout.travel.treatoutmobile.Classes.Place
 import okhttp3.*
-import org.json.JSONObject
 import java.io.IOException
 
-class RestaurantActivity : AppCompatActivity() {
+class PlacesActivity : AppCompatActivity() {
 
     val placeList: ArrayList<Place> = ArrayList()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_restaurant)
+        setContentView(R.layout.activity_places)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         val title:String = intent.getStringExtra("SERVICE")

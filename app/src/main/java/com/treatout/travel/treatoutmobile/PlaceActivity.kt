@@ -1,5 +1,6 @@
 package com.treatout.travel.treatoutmobile
 
+
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
@@ -35,9 +36,8 @@ class PlaceActivity : AppCompatActivity() {
 
 
         Picasso.get().load("http://i.imgur.com/DvpvklR.png").into(image1)
-        Picasso.get().load("http://i.imgur.com/DvpvklR.png").into(image2);
-        Picasso.get().load("http://i.imgur.com/DvpvklR.png").into(image3);
-
+        Picasso.get().load("http://i.imgur.com/DvpvklR.png").into(image2)
+        Picasso.get().load("http://i.imgur.com/DvpvklR.png").into(image3)
 
     }
 

@@ -114,6 +114,7 @@
                         app:layout_constraintHorizontal_bias="0.0"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/img2"
+                        android:scaleType="centerCrop"
                         app:srcCompat="@drawable/ic_launcher_background" />
 
                     <ImageView
@@ -127,6 +128,7 @@
                         app:layout_constraintHorizontal_bias="0.0"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
+                        android:scaleType="centerCrop"
                         app:srcCompat="@drawable/ic_launcher_background" />
 
                     <ImageView
@@ -140,6 +142,7 @@
                         app:layout_constraintHorizontal_bias="0.0"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/img1"
+                        android:scaleType="centerCrop"
                         app:srcCompat="@drawable/ic_launcher_background" />
                 </android.support.constraint.ConstraintLayout>
             </android.support.v7.widget.CardView>
