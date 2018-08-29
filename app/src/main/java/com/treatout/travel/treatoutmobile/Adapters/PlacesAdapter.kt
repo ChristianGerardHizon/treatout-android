@@ -30,7 +30,7 @@ class PlacesRecAdapter ( val context: Context,val placeList: ArrayList<Place>): 
             p0.itemView.star.text = "★★✰✰✰"
         }else if ( place.rating == 1.0){
             p0.itemView.star.text = "★✰✰✰✰"
-        }else if ( place.rating == 0.0){
+        }else {
             p0.itemView.star.text = "✰✰✰✰✰"
         }
 

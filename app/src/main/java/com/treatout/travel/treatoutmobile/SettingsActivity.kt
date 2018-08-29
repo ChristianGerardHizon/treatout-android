@@ -19,17 +19,32 @@ class SettingsActivity : AppCompatActivity() {
 
 
 
-        val sharedPreferences = getSharedPreferences("CONFIG", Context.MODE_PRIVATE)
+        val configPreferences = getSharedPreferences("CONFIG", Context.MODE_PRIVATE)
+        val address = configPreferences?.getString("IPADDRESS", "https://treatout.000webhostapp.com").toString()
 
         val ipaddress = findViewById<EditText>(R.id.edtIPaddress)
         val changeBtn = findViewById<Button>(R.id.btnChange)
+        val btnCloud =  findViewById<Button>(R.id.btnCloud)
+        val btnLocalHost = findViewById<Button>(R.id.btnLocalhost)
+
+        ipaddress.setText(address)
+
+        btnCloud.setOnClickListener{
+            ipaddress.setText("https://treatout.000webhostapp.com")
+            Toast.makeText(this, "Press Change to Finalize", Toast.LENGTH_SHORT).show()
+        }
+
+        btnLocalHost.setOnClickListener{
+            ipaddress.setText("http://192.168.0.205/treatout")
+            Toast.makeText(this, "Press Change to Finalize", Toast.LENGTH_SHORT).show()
+        }
 
         changeBtn.setOnClickListener {
-            val editor = sharedPreferences.edit()
+            val editor = configPreferences.edit()
             editor.putString("IPADDRESS" ,ipaddress.text.toString())
             editor.apply()
 
-            Toast.makeText(this, "Changed IP Address", Toast.LENGTH_SHORT)
+            Toast.makeText(this, "Changed IP Address", Toast.LENGTH_SHORT).show()
         }
 
     }
