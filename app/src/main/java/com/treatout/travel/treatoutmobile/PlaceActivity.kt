@@ -1,12 +1,15 @@
 package com.treatout.travel.treatoutmobile
 
 
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.activity_main.*
 
 class PlaceActivity : AppCompatActivity() {
 
@@ -25,6 +28,7 @@ class PlaceActivity : AppCompatActivity() {
         val titleTxt = findViewById<TextView>(R.id.title)
         val addressTxt = findViewById<TextView>(R.id.address)
         val ratingTxt = findViewById<TextView>(R.id.rating)
+        val btnTerminal = findViewById<Button>(R.id.btnTerminal)
 
         titleTxt.text = name
         addressTxt.text = address
@@ -35,9 +39,18 @@ class PlaceActivity : AppCompatActivity() {
         val image3 = findViewById<ImageView>(R.id.img3)
 
 
-        Picasso.get().load("http://i.imgur.com/DvpvklR.png").into(image1)
-        Picasso.get().load("http://i.imgur.com/DvpvklR.png").into(image2)
-        Picasso.get().load("http://i.imgur.com/DvpvklR.png").into(image3)
+        Picasso.get().load("https://placeimg.com/640/480/nature").into(image1)
+        Picasso.get().load("https://placeimg.com/640/480/arch").into(image2)
+        Picasso.get().load("https://placeimg.com/640/480/tech").into(image3)
+
+        btnTerminal.setOnClickListener{
+            startActivity(Intent(this, MapsActivity::class.java))
+            val intent = Intent(this, MapsActivity::class.java)
+            intent.putExtra("LAT", 10.706304)
+            intent.putExtra("LNG", 122.963013)
+            startActivity(intent)
+//            ,
+        }
 
     }
 

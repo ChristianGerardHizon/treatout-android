@@ -11,6 +11,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ScrollView
 import android.widget.Toast
+import com.squareup.picasso.Picasso
 import com.treatout.travel.treatoutmobile.Adapters.PlacesRecAdapter
 import com.treatout.travel.treatoutmobile.Classes.Place
 import okhttp3.*
@@ -32,21 +33,38 @@ class PlacesActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
 
-        val title:String = intent.getStringExtra("SERVICE")
-        setTitle(title)
-
         val progress = findViewById<ConstraintLayout>(R.id.progress)
         val recView = findViewById<RecyclerView>(R.id.placeList)
-
         recView.layoutManager = LinearLayoutManager(this)
         adapter = PlacesRecAdapter(this,placeList)
         recView.adapter = adapter
-        if( title == "Restaurants"){
-            fetchJSON( this, "restaurants+in+bacolod")
+
+
+        if( intent.hasExtra("QUERY") ){
+            setTitle("Search")
+            val query = intent.getBooleanExtra("QUERY", false)
+            val min = intent.getStringExtra("MIN")
+            val max =intent.getStringExtra("MAX")
+            var name = ""
+
+            if(intent.hasExtra("NAME")){
+                        name = intent.getStringExtra("NAME")
+            }
+            println("searchvalue=$name&minrate=$min&maxrate=$max")
+            fetchQueryJSON(this, "searchvalue=$name&minrate=$min&maxrate=$max")
 
         }else{
-            fetchJSON( this, "tourist+spots+in+bacolod")
+            val title:String = intent.getStringExtra("SERVICE")
+            setTitle(title)
+            if( title == "Restaurants"){
+                fetchJSON( this, "restaurants+in+bacolod")
+
+            }else{
+                fetchJSON( this, "tourist+spots+in+bacolod")
+            }
         }
+
+
     }
 
     fun fetchJSON ( context: Context, query:String) {
@@ -68,19 +86,75 @@ class PlacesActivity : AppCompatActivity() {
                         val resultArray = JSONArrayToArray( result )
                         for ( res in resultArray){
                             val resObj = JSONObject(res)
-//                            println(resObj.get("formatted_address"))
                             val formattedAddress = resObj.get("formatted_address").toString()
                             val name = resObj.get("name").toString()
                             val placeId = resObj.get("place_id").toString()
                             val rating = resObj.get("rating")
-//                            val photosRef= JSONArray(resObj.get("photos"))
-//                            val photo = JSONObject(photosRef[0].toString()).toString()
-                            placeList.add( Place( name, formattedAddress, rating as Number, ""))
+                            var imageArr: ArrayList<String> = ArrayList()
+
+                            if( resObj.has("photos") ){
+                                val photos = resObj.getJSONArray("photos")
+                                val photoArr = JSONArrayToArray( photos )
+
+                                for ( photo in photoArr ){
+                                    val photoObj = JSONObject(photo)
+                                    imageArr.add( photoObj.get("photo_reference").toString() )
+                                }
+                            }
+
+                            placeList.add( Place( name, formattedAddress, rating as Number, imageArr, placeId))
                             runOnUiThread {
                                 adapter.notifyItemInserted(placeList.size)
                             }
                         }
                     }
+                }
+                runOnUiThread {
+                    transitionPage(false)
+                }
+            }
+
+            override fun onFailure(call: Call?, e: IOException?) {
+                runOnUiThread {
+                    transitionPage(false)
+                }
+                println("Failed Request")
+            }
+
+        })
+
+    }
+
+    fun fetchQueryJSON ( context: Context, query:String) {
+        runOnUiThread {
+            transitionPage(true)
+        }
+        val url = "https://treatout.000webhostapp.com/modules/api/searchplaces.php?$query"
+
+        val client = OkHttpClient()
+        val request = Request.Builder().url(url).build()
+
+        client.newCall(request).enqueue( object: Callback{
+
+            override fun onResponse(call: Call?, response: Response?) {
+                var body = response?.body()?.string()
+                println(body)
+                if (body != null) {
+                    body = body.drop(1)
+                    body = body.dropLast(1)
+
+                    val result = JSONObject(body)
+                    val arr = JSONArray(result.get("data").toString())
+                    val arrList = JSONArrayToArray(arr)
+                    val image: ArrayList<String> = ArrayList()
+                    for( arr in arrList){
+                        val obj = JSONObject(arr)
+                        placeList.add( Place( obj.getString("name"), "Bacolod City",  5 as Number, image, obj.getString("place_id")))
+                        runOnUiThread {
+                            adapter.notifyItemInserted(placeList.size)
+                        }
+                    }
+
                 }
                 runOnUiThread {
                     transitionPage(false)
@@ -114,7 +188,7 @@ class PlacesActivity : AppCompatActivity() {
 
     fun JSONArrayToArray ( jArray:JSONArray ): ArrayList<String> {
         val list = ArrayList<String>()
-        val jsonArray = jArray as JSONArray
+        val jsonArray = jArray
         if (jsonArray != null) {
             val len = jsonArray.length()
             for (i in 0 until len) {

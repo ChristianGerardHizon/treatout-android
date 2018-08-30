@@ -4,9 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Button
-import android.widget.SearchView
-import android.widget.Toast
+import android.widget.*
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -14,10 +13,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val toTouristSpot = findViewById<Button>(R.id.toTouristSpots)
-        val toRestaurants = findViewById<Button>(R.id.toRestaurants)
-        val toLogout = findViewById<Button>(R.id.btnLogout)
+        val toTouristSpot = findViewById<ImageButton>(R.id.toTouristSpots)
+        val toRestaurants = findViewById<ImageButton>(R.id.toRestaurants)
+        val toLogout = findViewById<ImageButton>(R.id.toLogout)
         val search = findViewById<SearchView>(R.id.search)
+        val btnSearch = findViewById<Button>(R.id.btnSearch)
 
         val sharedPreferences = getSharedPreferences("ACCOUNTS", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
@@ -42,9 +42,24 @@ class MainActivity : AppCompatActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
         }
+        val ediname = findViewById<EditText>(R.id.edtname)
+        val editmin = findViewById<EditText>(R.id.edtmin)
+        val editmax = findViewById<EditText>(R.id.edtmax)
+        btnSearch.setOnClickListener{
 
-        search.setOnSearchClickListener{
-            Toast.makeText(this, search.query , Toast.LENGTH_SHORT)
+            if( editmin.text.toString().toLong() > editmax.text.toString().toLong()){
+                Toast.makeText(this,"Min must be higher", Toast.LENGTH_SHORT).show()
+            }else{
+                val intent = Intent(this, PlacesActivity::class.java)
+                println(edtmin.text.toString())
+                intent.putExtra("QUERY", true)
+                intent.putExtra("MIN", edtmin.text.toString())
+                intent.putExtra("MAX", edtmax.text.toString())
+                intent.putExtra("NAME", edtname.text.toString())
+                startActivity(intent)
+            }
+
+
         }
 
     }

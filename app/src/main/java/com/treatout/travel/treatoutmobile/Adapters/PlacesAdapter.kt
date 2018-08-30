@@ -6,6 +6,8 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import com.squareup.picasso.Picasso
 import com.treatout.travel.treatoutmobile.Classes.Place
 import com.treatout.travel.treatoutmobile.PlaceActivity
 import com.treatout.travel.treatoutmobile.R
@@ -33,6 +35,17 @@ class PlacesRecAdapter ( val context: Context,val placeList: ArrayList<Place>): 
         }else {
             p0.itemView.star.text = "✰✰✰✰✰"
         }
+
+//        for( image in place.image){
+//
+//            println( image )
+//
+//            val newImage = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$image"
+////            val view = p0.itemView.imageView
+//            Picasso.get().load(newImage).into(p0.itemView.imageView)
+//            break
+//
+//        }
 
         p0.itemView.setOnClickListener{
             val intent = Intent(context, PlaceActivity::class.java)
