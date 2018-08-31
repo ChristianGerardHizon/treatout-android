@@ -22,31 +22,7 @@ class PlacesRecAdapter ( val context: Context,val placeList: ArrayList<Place>): 
         p0.itemView.title.text = place.name
         p0.itemView.address.text = place.address
 
-        if ( place.rating == 5.0){
-            p0.itemView.star.text = "★★★★★"
-        }else if ( place.rating == 4.0){
-            p0.itemView.star.text = "★★★★✰"
-        }else if ( place.rating == 3.0){
-            p0.itemView.star.text = "★★★✰✰"
-        }else if ( place.rating == 2.0){
-            p0.itemView.star.text = "★★✰✰✰"
-        }else if ( place.rating == 1.0){
-            p0.itemView.star.text = "★✰✰✰✰"
-        }else {
-            p0.itemView.star.text = "✰✰✰✰✰"
-        }
-
-//        for( image in place.image){
-//
-//            println( image )
-//
-//            val newImage = "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$image"
-////            val view = p0.itemView.imageView
-//            Picasso.get().load(newImage).into(p0.itemView.imageView)
-//            break
-//
-//        }
-
+        p0.itemView.star.rating = place.rating.toFloat()
         p0.itemView.setOnClickListener{
             val intent = Intent(context, PlaceActivity::class.java)
             intent.putExtra("name",  place.name)
@@ -54,6 +30,12 @@ class PlacesRecAdapter ( val context: Context,val placeList: ArrayList<Place>): 
             intent.putExtra("rating",  place.rating.toString())
             intent.putExtra("id",  place.id)
             context?.startActivity(intent)
+        }
+
+        for( image in place.image){
+            println("image $image")
+            Picasso.get().load("https://maps.googleapis.com/maps/api/place/photo?maxwidth=300&photoreference=$image&key=AIzaSyDWJ95wDORvWwB6B8kNzSNDfVSOeQc8W7k").into(p0.itemView.imageView)
+            break
         }
     }
 

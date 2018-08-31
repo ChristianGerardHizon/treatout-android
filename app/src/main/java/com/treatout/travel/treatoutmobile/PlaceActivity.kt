@@ -3,17 +3,16 @@ package com.treatout.travel.treatoutmobile
 
 import android.content.Context
 import android.content.Intent
+import android.opengl.Visibility
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
-import android.support.v7.widget.RecyclerView
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import com.squareup.picasso.Picasso
 import com.treatout.travel.treatoutmobile.Classes.Place
 import com.treatout.travel.treatoutmobile.Classes.Terminal
-import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -48,19 +47,12 @@ class PlaceActivity : AppCompatActivity() {
         val image3 = findViewById<ImageView>(R.id.img3)
 
 
-        Picasso.get().load("https://placeimg.com/640/480/nature").into(image1)
-        Picasso.get().load("https://placeimg.com/640/480/arch").into(image2)
-        Picasso.get().load("https://placeimg.com/640/480/tech").into(image3)
+//        Picasso.get().load("https://placeimg.com/640/480/nature").into(image1)
+//        Picasso.get().load("https://placeimg.com/640/480/arch").into(image2)
+//        Picasso.get().load("https://placeimg.com/640/480/tech").into(image3)
 
-//        btnTerminal.setOnClickListener{
-//            startActivity(Intent(this, MapsActivity::class.java))
-//            val intent = Intent(this, MapsActivity::class.java)
-//            intent.putExtra("LAT", 10.706304)
-//            intent.putExtra("LNG", 122.963013)
-//            startActivity(intent)
-//        }
-
-        fetchQueryJSON ( this, "place_id=$placeid")
+        fetchTerminal ( this, "place_id=$placeid")
+        fetchRate(this, "placeid=$placeid")
 
 
     }
@@ -74,9 +66,10 @@ class PlaceActivity : AppCompatActivity() {
         }
     }
 
-    fun fetchQueryJSON (context: Context, query:String) {
+    fun fetchTerminal (context: Context, query:String) {
         runOnUiThread {
             transitionPage(true)
+            findViewById<TextView>(R.id.loadingText).text = "Loading Terminals..."
         }
         val url = "https://treatout.000webhostapp.com/modules/api/geterminal.php?$query"
 
@@ -123,6 +116,133 @@ class PlaceActivity : AppCompatActivity() {
 
 
                     }
+
+                }
+                fetchFullDetails(context)
+            }
+
+            override fun onFailure(call: Call?, e: IOException?) {
+                println("Failed Request")
+                fetchFullDetails(context)
+                runOnUiThread {
+                    Toast.makeText(context,"Unable to get Terminals",Toast.LENGTH_SHORT).show()
+                }
+
+            }
+
+        })
+
+    }
+
+    fun fetchRate (context: Context, query:String) {
+        runOnUiThread {
+            transitionPage(true)
+            findViewById<TextView>(R.id.loadingText).text = "Loading Terminals..."
+        }
+        val url = "https://treatout.000webhostapp.com/modules/api/getplacedetails.php?$query"
+
+        val client = OkHttpClient()
+        val request = Request.Builder().url(url).build()
+
+        client.newCall(request).enqueue( object: Callback {
+
+            override fun onResponse(call: Call?, response: Response?) {
+                var body = response?.body()?.string()
+                if (body != null) {
+                    body = body.drop(1)
+                    body = body.dropLast(1)
+                    println(body)
+                    val result = JSONObject(body.toString())
+                    if( result.has("data")){
+                        val arr = JSONArray(result.get("data").toString())
+                        val formattedArr = JSONArrayToArray(arr)
+
+                        for (res in formattedArr){
+                            val obj = JSONObject(res)
+                            val min = obj.getString("rate_min")
+                            val max = obj.getString("rate_max")
+
+                            runOnUiThread{
+                                findViewById<TextView>(R.id.placeRate).text = "P$min to P$max"
+                            }
+                        }
+
+                    }else{
+                        runOnUiThread{
+                            findViewById<TextView>(R.id.placeRate).visibility = View.GONE
+                        }
+                    }
+
+                }
+                fetchFullDetails(context)
+            }
+
+            override fun onFailure(call: Call?, e: IOException?) {
+                println("Failed Request")
+                fetchFullDetails(context)
+                runOnUiThread {
+                    Toast.makeText(context,"Unable to get Terminals",Toast.LENGTH_SHORT).show()
+                }
+
+            }
+
+        })
+
+    }
+
+    fun fetchFullDetails ( context: Context ) {
+        val placeid:String = intent.getStringExtra("id")
+
+        runOnUiThread{
+            findViewById<TextView>(R.id.loadingText).text = "Loading Place Details..."
+        }
+
+        val url = "https://maps.googleapis.com/maps/api/place/details/json?placeid=$placeid&key=AIzaSyDWJ95wDORvWwB6B8kNzSNDfVSOeQc8W7k"
+
+        val client = OkHttpClient()
+        val request = Request.Builder().url(url).build()
+
+        client.newCall(request).enqueue( object: Callback{
+
+            override fun onResponse(call: Call?, response: Response?) {
+                var body = response?.body()?.string()
+                if (body != null) {
+
+                    val main = JSONObject(body).get("result").toString()
+                    val result = JSONObject(main)
+                    val phone = result.getString("formatted_phone_number")
+
+
+//                    val schedule = result.get("weekday_text")
+                    val photos = result.getJSONArray("photos")
+                    val rating = result.getDouble("rating")
+                    val photoArray = JSONArrayToArray(photos)
+//                    println(schedule.toString())
+
+                    val layoutLinear = findViewById<LinearLayout>(R.id.photoGallery)
+
+                    runOnUiThread {
+                        findViewById<TextView>(R.id.contactNumber).text = phone
+                        findViewById<RatingBar>(R.id.ratingBar).rating = rating.toFloat()
+                        layoutLinear.removeAllViews()
+
+                    }
+
+
+                    for( photo in photoArray){
+
+                        val ref = JSONObject(photo)
+                        val photoRef = ref.getString("photo_reference")
+                        val imageHolder = ImageView(context)
+                        imageHolder.scaleType = ImageView.ScaleType.CENTER_CROP
+
+                        runOnUiThread{
+                            Picasso.get().load("https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$photoRef&key=AIzaSyDWJ95wDORvWwB6B8kNzSNDfVSOeQc8W7k").into(imageHolder)
+                            layoutLinear.addView(imageHolder)
+                        }
+                    }
+
+
 
                 }
                 runOnUiThread {
