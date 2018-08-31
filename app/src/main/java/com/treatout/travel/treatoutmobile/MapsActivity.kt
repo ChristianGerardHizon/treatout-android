@@ -14,12 +14,29 @@ import com.google.android.gms.maps.model.MarkerOptions
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
+    private lateinit var lat:String
+    private lateinit var lng:String
+    private lateinit var name:String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        setTitle("Terminal")
+
+        if( intent.hasExtra("NAME") ) {
+            name = intent.getStringExtra("NAME")
+            setTitle(name)
+        }
+        if( intent.hasExtra("LAT") ) {
+            lat = intent.getStringExtra("LAT")
+            println(lat)
+        }
+
+        if( intent.hasExtra("LNG") ) {
+            lng = intent.getStringExtra("LNG")
+            println(lng)
+        }
+
 
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -28,21 +45,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
         // Add a marker in Sydney and move the camera
-        val coord = LatLng(10.706304, 122.963013)
-        mMap.addMarker(MarkerOptions().position(coord).title("Ceres Terminal"))
+
+        println(lat.toDouble())
+        println(lng.toDouble())
+
+        val coord = LatLng(lat.toDouble(), lng.toDouble())
+        mMap.addMarker(MarkerOptions().position(coord).title(name))
         mMap.moveCamera(CameraUpdateFactory.newLatLng(coord))
     }
 

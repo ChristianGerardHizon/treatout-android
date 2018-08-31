@@ -52,6 +52,7 @@ class PlacesRecAdapter ( val context: Context,val placeList: ArrayList<Place>): 
             intent.putExtra("name",  place.name)
             intent.putExtra("address",  place.address)
             intent.putExtra("rating",  place.rating.toString())
+            intent.putExtra("id",  place.id)
             context?.startActivity(intent)
         }
     }
