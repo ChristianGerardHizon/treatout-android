@@ -18,7 +18,7 @@ import okhttp3.*
 import org.json.JSONArray
 import java.io.IOException
 import org.json.JSONObject
-
+import java.net.URLEncoder
 
 
 class PlacesActivity : AppCompatActivity() {
@@ -43,12 +43,26 @@ class PlacesActivity : AppCompatActivity() {
         if( intent.hasExtra("QUERY") ){
             setTitle("Search")
             val query = intent.getBooleanExtra("QUERY", false)
-            val min = intent.getStringExtra("MIN")
-            val max =intent.getStringExtra("MAX")
-            var name = ""
+            var min:String
+            var max:String
+            var name:String
+
+            if( intent.hasExtra("MIN")){
+                min = intent.getStringExtra("MIN")
+            }else{
+                min = ""
+            }
+
+            if( intent.hasExtra("MAX")){
+                max = intent.getStringExtra("MAX")
+            }else{
+                max = ""
+            }
 
             if(intent.hasExtra("NAME")){
-                        name = intent.getStringExtra("NAME")
+                name = URLEncoder.encode(intent.getStringExtra("NAME") , "UTF-8")
+            }else{
+                name = ""
             }
             println("searchvalue=$name&minrate=$min&maxrate=$max")
             fetchQueryJSON(this, "searchvalue=$name&minrate=$min&maxrate=$max")
@@ -138,20 +152,24 @@ class PlacesActivity : AppCompatActivity() {
 
             override fun onResponse(call: Call?, response: Response?) {
                 var body = response?.body()?.string()
-                println(body)
                 if (body != null) {
                     body = body.drop(1)
                     body = body.dropLast(1)
+                    println(body)
 
                     val result = JSONObject(body)
-                    val arr = JSONArray(result.get("data").toString())
-                    val arrList = JSONArrayToArray(arr)
-                    val image: ArrayList<String> = ArrayList()
-                    for( arr in arrList){
-                        val obj = JSONObject(arr)
-                        placeList.add( Place( obj.getString("name"), "Bacolod City",  5 as Number, image, obj.getString("place_id")))
-                        runOnUiThread {
-                            adapter.notifyItemInserted(placeList.size)
+                    if(result.get("data").toString().equals("No results found.")){
+
+                    }else{
+                        val arr = JSONArray(result.get("data").toString())
+                        val arrList = JSONArrayToArray(arr)
+                        val image: ArrayList<String> = ArrayList()
+                        for( arr in arrList){
+                            val obj = JSONObject(arr)
+                            placeList.add( Place( obj.getString("name"), "Bacolod City",  5 as Number, image, obj.getString("place_id")))
+                            runOnUiThread {
+                                adapter.notifyItemInserted(placeList.size)
+                            }
                         }
                     }
 

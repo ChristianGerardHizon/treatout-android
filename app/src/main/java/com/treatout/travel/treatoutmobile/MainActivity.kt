@@ -42,24 +42,32 @@ class MainActivity : AppCompatActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             startActivity(intent)
         }
-        val ediname = findViewById<EditText>(R.id.edtname)
+        val editname = findViewById<EditText>(R.id.edtname)
         val editmin = findViewById<EditText>(R.id.edtmin)
         val editmax = findViewById<EditText>(R.id.edtmax)
         btnSearch.setOnClickListener{
 
-            if( editmin.text.toString().toLong() > editmax.text.toString().toLong()){
-                Toast.makeText(this,"Min must be higher", Toast.LENGTH_SHORT).show()
-            }else{
+            if( editmin.text.isEmpty() || editmax.text.isEmpty() ){
                 val intent = Intent(this, PlacesActivity::class.java)
                 println(edtmin.text.toString())
                 intent.putExtra("QUERY", true)
-                intent.putExtra("MIN", edtmin.text.toString())
-                intent.putExtra("MAX", edtmax.text.toString())
+                intent.putExtra("MIN", "")
+                intent.putExtra("MAX", "")
                 intent.putExtra("NAME", edtname.text.toString())
                 startActivity(intent)
+            }else{
+                if( editmin.text.toString().toLong() > editmax.text.toString().toLong()){
+                    Toast.makeText(this,"Min must be higher", Toast.LENGTH_SHORT).show()
+                }else{
+                    val intent = Intent(this, PlacesActivity::class.java)
+                    println(edtmin.text.toString())
+                    intent.putExtra("QUERY", true)
+                    intent.putExtra("MIN", edtmin.text.toString())
+                    intent.putExtra("MAX", edtmax.text.toString())
+                    intent.putExtra("NAME", edtname.text.toString())
+                    startActivity(intent)
+                }
             }
-
-
         }
 
     }
