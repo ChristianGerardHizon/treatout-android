@@ -86,34 +86,36 @@ class PlaceActivity : AppCompatActivity() {
                     body = body.dropLast(1)
 
                     val result = JSONObject(body)
-                    val arr = JSONArray(result.get("terminals").toString())
-                    val terminals = JSONArrayToArray(arr)
-                    for( terminal in terminals){
-                        val obj = JSONObject(terminal)
-                        println(obj.toString())
-                        val term = Terminal(
-                                obj.getString("place_id"),
-                                obj.getString("fare_rate_max"),
-                                obj.getString("latitude"),
-                                obj.getString("longitude"),
-                                obj.getString("transportation"),
-                                obj.getString("description"))
-                        runOnUiThread {
-                            val termLayout = findViewById<LinearLayout>(R.id.terminalLayout)
-                            val termBtn = Button(context)
-                            termBtn.text = term.transportation
-                            termBtn.setOnClickListener{
-                                val intent = Intent(context, MapsActivity::class.java)
-                                intent.putExtra("LAT", term.lat)
-                                intent.putExtra("LNG", term.lng)
-                                intent.putExtra("NAME", term.transportation)
+                    if( result.has("terminals")){
+                        val arr = JSONArray(result.get("terminals").toString())
+                        val terminals = JSONArrayToArray(arr)
+                        for( terminal in terminals){
+                            val obj = JSONObject(terminal)
+                            println(obj.toString())
+                            val term = Terminal(
+                                    obj.getString("place_id"),
+                                    obj.getString("fare_rate_max"),
+                                    obj.getString("latitude"),
+                                    obj.getString("longitude"),
+                                    obj.getString("transportation"),
+                                    obj.getString("description"))
+                            runOnUiThread {
+                                val termLayout = findViewById<LinearLayout>(R.id.terminalLayout)
+                                val termBtn = Button(context)
+                                termBtn.text = term.transportation
+                                termBtn.setOnClickListener{
+                                    val intent = Intent(context, MapsActivity::class.java)
+                                    intent.putExtra("LAT", term.lat)
+                                    intent.putExtra("LNG", term.lng)
+                                    intent.putExtra("NAME", term.transportation)
 
-                                startActivity(intent)
+                                    startActivity(intent)
 
+                                }
+                                termLayout.addView(termBtn)
                             }
-                            termLayout.addView(termBtn)
                         }
-
+                    }else{
 
                     }
 
@@ -154,18 +156,23 @@ class PlaceActivity : AppCompatActivity() {
                     println(body)
                     val result = JSONObject(body.toString())
                     if( result.has("data")){
-                        val arr = JSONArray(result.get("data").toString())
-                        val formattedArr = JSONArrayToArray(arr)
+                        try{
+                            val arr = JSONArray(result.get("data").toString())
+                            val formattedArr = JSONArrayToArray(arr)
 
-                        for (res in formattedArr){
-                            val obj = JSONObject(res)
-                            val min = obj.getString("rate_min")
-                            val max = obj.getString("rate_max")
+                            for (res in formattedArr){
+                                val obj = JSONObject(res)
+                                val min = obj.getString("rate_min")
+                                val max = obj.getString("rate_max")
 
-                            runOnUiThread{
-                                findViewById<TextView>(R.id.placeRate).text = "P$min to P$max"
+                                runOnUiThread{
+                                    findViewById<TextView>(R.id.placeRate).text = "P$min to P$max"
+                                }
                             }
+                        }catch (e: IOException){
+
                         }
+
 
                     }else{
                         runOnUiThread{
@@ -210,40 +217,49 @@ class PlaceActivity : AppCompatActivity() {
 
                     val main = JSONObject(body).get("result").toString()
                     val result = JSONObject(main)
-                    val phone = result.getString("formatted_phone_number")
-
-
-//                    val schedule = result.get("weekday_text")
-                    val photos = result.getJSONArray("photos")
-                    val rating = result.getDouble("rating")
-                    val photoArray = JSONArrayToArray(photos)
-//                    println(schedule.toString())
-
-                    val layoutLinear = findViewById<LinearLayout>(R.id.photoGallery)
-
-                    runOnUiThread {
-                        findViewById<TextView>(R.id.contactNumber).text = phone
-                        findViewById<RatingBar>(R.id.ratingBar).rating = rating.toFloat()
-                        layoutLinear.removeAllViews()
-
-                    }
-
-
-                    for( photo in photoArray){
-
-                        val ref = JSONObject(photo)
-                        val photoRef = ref.getString("photo_reference")
-                        val imageHolder = ImageView(context)
-                        imageHolder.scaleType = ImageView.ScaleType.CENTER_CROP
-
+                    var phone = ""
+                    if( result.has("formatted_phone_number")){
+                        phone = result.getString("formatted_phone_number")
+                    }else{
                         runOnUiThread{
-                            Picasso.get().load("https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$photoRef&key=AIzaSyDWJ95wDORvWwB6B8kNzSNDfVSOeQc8W7k").into(imageHolder)
-                            layoutLinear.addView(imageHolder)
+                            findViewById<TextView>(R.id.contactNumber).visibility = View.GONE
                         }
                     }
 
 
+//                    val schedule = result.get("weekday_text")
 
+                    if(result.has("photos")){
+                        val photos = result.getJSONArray("photos")
+                        val rating = result.getDouble("rating")
+                        val photoArray = JSONArrayToArray(photos)
+//                    println(schedule.toString())
+
+                        val layoutLinear = findViewById<LinearLayout>(R.id.photoGallery)
+
+                        runOnUiThread {
+                            findViewById<TextView>(R.id.contactNumber).text = phone
+                            findViewById<RatingBar>(R.id.ratingBar).rating = rating.toFloat()
+                            layoutLinear.removeAllViews()
+
+                        }
+
+
+                        for( photo in photoArray){
+
+                            val ref = JSONObject(photo)
+                            val photoRef = ref.getString("photo_reference")
+                            val imageHolder = ImageView(context)
+                            imageHolder.scaleType = ImageView.ScaleType.CENTER_CROP
+
+                            runOnUiThread{
+                                Picasso.get().load("https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$photoRef&key=AIzaSyDWJ95wDORvWwB6B8kNzSNDfVSOeQc8W7k").into(imageHolder)
+                                layoutLinear.addView(imageHolder)
+                            }
+                        }
+                    }else{
+
+                    }
                 }
                 runOnUiThread {
                     transitionPage(false)
