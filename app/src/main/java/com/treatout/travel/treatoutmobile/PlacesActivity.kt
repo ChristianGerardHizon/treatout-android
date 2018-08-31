@@ -61,6 +61,7 @@ class PlacesActivity : AppCompatActivity() {
 
             if(intent.hasExtra("NAME")){
                 name = URLEncoder.encode(intent.getStringExtra("NAME") , "UTF-8")
+                println( name )
             }else{
                 name = ""
             }
