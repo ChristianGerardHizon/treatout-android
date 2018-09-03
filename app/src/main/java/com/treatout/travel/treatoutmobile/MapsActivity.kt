@@ -18,6 +18,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var lng:String
     private lateinit var name:String
 
+    private var place_name:String = ""
+    private var place_lat:String = ""
+    private var place_lng:String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
@@ -37,6 +41,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             println(lng)
         }
 
+        if( intent.hasExtra("PLACE_LAT") ) {
+            place_lat = intent.getStringExtra("PLACE_LAT")
+            println(place_lng)
+        }
+
+        if( intent.hasExtra("PLACE_LNG") ) {
+            place_lng = intent.getStringExtra("PLACE_LNG")
+            println(place_lng)
+        }
+
+        if( intent.hasExtra("PLACE_NAME") ) {
+            place_name = intent.getStringExtra("PLACE_NAME")
+            println(place_lng)
+        }
+
 
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -50,12 +69,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         // Add a marker in Sydney and move the camera
 
-        println(lat.toDouble())
-        println(lng.toDouble())
+        if( place_lat != "" && place_lng != ""){
+            val coordPlace = LatLng(place_lat.toDouble(), place_lng.toDouble())
+            mMap.addMarker(MarkerOptions().position(coordPlace).title(place_name))
+        }
 
         val coord = LatLng(lat.toDouble(), lng.toDouble())
         mMap.addMarker(MarkerOptions().position(coord).title(name))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(coord))
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coord,10f))
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {

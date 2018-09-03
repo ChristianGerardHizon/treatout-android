@@ -20,18 +20,17 @@ import java.io.IOException
 
 class PlaceActivity : AppCompatActivity() {
 
+    private lateinit var name:String
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_place)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        val name:String = intent.getStringExtra("name")
+        name = intent.getStringExtra("name")
         val address:String = intent.getStringExtra("address")
         val rating:String = intent.getStringExtra("rating")
         val placeid:String = intent.getStringExtra("id")
-
-        println(name)
-        println(address)
-        println(rating)
 
         val titleTxt = findViewById<TextView>(R.id.title)
         val addressTxt = findViewById<TextView>(R.id.address)
@@ -50,9 +49,7 @@ class PlaceActivity : AppCompatActivity() {
 //        Picasso.get().load("https://placeimg.com/640/480/nature").into(image1)
 //        Picasso.get().load("https://placeimg.com/640/480/arch").into(image2)
 //        Picasso.get().load("https://placeimg.com/640/480/tech").into(image3)
-
-        fetchTerminal ( this, "place_id=$placeid")
-        fetchRate(this, "placeid=$placeid")
+        fetchFullDetails(this)
 
 
     }
@@ -66,7 +63,7 @@ class PlaceActivity : AppCompatActivity() {
         }
     }
 
-    fun fetchTerminal (context: Context, query:String) {
+    fun fetchTerminal (context: Context, query:String, lat:String, lng:String) {
         runOnUiThread {
             transitionPage(true)
             findViewById<TextView>(R.id.loadingText).text = "Loading Terminals..."
@@ -107,8 +104,10 @@ class PlaceActivity : AppCompatActivity() {
                                     val intent = Intent(context, MapsActivity::class.java)
                                     intent.putExtra("LAT", term.lat)
                                     intent.putExtra("LNG", term.lng)
+                                    intent.putExtra("PLACE_LAT", lat)
+                                    intent.putExtra("PLACE_LNG", lng)
+                                    intent.putExtra("PLACE_NAME", name)
                                     intent.putExtra("NAME", term.transportation)
-
                                     startActivity(intent)
 
                                 }
@@ -120,7 +119,6 @@ class PlaceActivity : AppCompatActivity() {
                     }
 
                 }
-                fetchFullDetails(context)
             }
 
             override fun onFailure(call: Call?, e: IOException?) {
@@ -181,13 +179,17 @@ class PlaceActivity : AppCompatActivity() {
                     }
 
                 }
-                fetchFullDetails(context)
+               runOnUiThread{
+                   transitionPage(false)
+
+               }
             }
 
             override fun onFailure(call: Call?, e: IOException?) {
                 println("Failed Request")
                 fetchFullDetails(context)
                 runOnUiThread {
+                    transitionPage(false)
                     Toast.makeText(context,"Unable to get Terminals",Toast.LENGTH_SHORT).show()
                 }
 
@@ -198,6 +200,7 @@ class PlaceActivity : AppCompatActivity() {
     }
 
     fun fetchFullDetails ( context: Context ) {
+        transitionPage(true)
         val placeid:String = intent.getStringExtra("id")
 
         runOnUiThread{
@@ -212,6 +215,8 @@ class PlaceActivity : AppCompatActivity() {
         client.newCall(request).enqueue( object: Callback{
 
             override fun onResponse(call: Call?, response: Response?) {
+                var lat: String
+                var lng: String
                 var body = response?.body()?.string()
                 if (body != null) {
 
@@ -225,6 +230,15 @@ class PlaceActivity : AppCompatActivity() {
                             findViewById<TextView>(R.id.contactNumber).visibility = View.GONE
                         }
                     }
+
+                    val geo =  JSONObject(result.get("geometry").toString())
+                    val location = JSONObject(geo.get("location").toString())
+
+                    lat = location.getString("lat")
+                    lng = location.getString("lng")
+
+                    println("LAT"+lat)
+                    println("LNG"+lng)
 
 
 //                    val schedule = result.get("weekday_text")
@@ -260,17 +274,14 @@ class PlaceActivity : AppCompatActivity() {
                     }else{
 
                     }
-                }
-                runOnUiThread {
-                    transitionPage(false)
+
+                    fetchTerminal ( context, "place_id=$placeid", lat, lng)
+                    fetchRate( context, "placeid=$placeid")
+
                 }
             }
 
             override fun onFailure(call: Call?, e: IOException?) {
-                runOnUiThread {
-                    transitionPage(false)
-                }
-                println("Failed Request")
             }
 
         })
