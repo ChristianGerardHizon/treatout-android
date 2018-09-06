@@ -6,7 +6,6 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import com.squareup.picasso.Picasso
 import com.treatout.travel.treatoutmobile.Classes.Place
 import com.treatout.travel.treatoutmobile.PlaceActivity
@@ -22,7 +21,7 @@ class PlacesRecAdapter ( val context: Context,val placeList: ArrayList<Place>): 
         p0.itemView.title.text = place.name
         p0.itemView.address.text = place.address
 
-        p0.itemView.star.rating = place.rating.toFloat()
+        p0.itemView.reviewStar.rating = place.rating.toFloat()
         p0.itemView.setOnClickListener{
             val intent = Intent(context, PlaceActivity::class.java)
             intent.putExtra("name",  place.name)

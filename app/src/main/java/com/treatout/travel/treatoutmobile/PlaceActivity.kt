@@ -7,11 +7,16 @@ import android.opengl.Visibility
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import com.squareup.picasso.Picasso
+import com.treatout.travel.treatoutmobile.Adapters.PlacesRecAdapter
+import com.treatout.travel.treatoutmobile.Adapters.ReviewAdapter
 import com.treatout.travel.treatoutmobile.Classes.Place
+import com.treatout.travel.treatoutmobile.Classes.Review
 import com.treatout.travel.treatoutmobile.Classes.Terminal
 import okhttp3.*
 import org.json.JSONArray
@@ -21,6 +26,8 @@ import java.io.IOException
 class PlaceActivity : AppCompatActivity() {
 
     private lateinit var name:String
+    val reviewList: ArrayList<Review> = ArrayList()
+    private lateinit var adapter: ReviewAdapter
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,6 +43,11 @@ class PlaceActivity : AppCompatActivity() {
         val addressTxt = findViewById<TextView>(R.id.address)
         val ratingTxt = findViewById<TextView>(R.id.rating)
 //        val btnTerminal = findViewById<Button>(R.id.btnTerminal)
+
+        val recView = findViewById<RecyclerView>(R.id.reviewRec)
+        recView.layoutManager = LinearLayoutManager(this)
+        adapter = ReviewAdapter(this,reviewList)
+        recView.adapter = adapter
 
         titleTxt.text = name
         addressTxt.text = address
@@ -247,7 +259,19 @@ class PlaceActivity : AppCompatActivity() {
                         val photos = result.getJSONArray("photos")
                         val rating = result.getDouble("rating")
                         val photoArray = JSONArrayToArray(photos)
-//                    println(schedule.toString())
+                        val reviewArray = JSONArrayToArray(result.getJSONArray("reviews"))
+
+                        println(reviewArray.toString())
+
+                        for( review in reviewArray){
+                            val rev = JSONObject(review)
+
+                            reviewList.add( Review(rev.getString("author_name"),rev.getString("text"),rev.get("rating") as Number))
+                            runOnUiThread {
+                                adapter.notifyItemInserted(reviewList.size)
+                            }
+
+                        }
 
                         val layoutLinear = findViewById<LinearLayout>(R.id.photoGallery)
 

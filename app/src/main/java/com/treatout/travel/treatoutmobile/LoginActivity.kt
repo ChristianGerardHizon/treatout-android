@@ -135,12 +135,17 @@ class LoginActivity : AppCompatActivity() {
                         val result = JSONDecoder(body)
                         if (result.get("login").toString().toBoolean()) {
                             runOnUiThread {
-                                transitionPage(false)
+                                val sharedPreferences = getSharedPreferences("ACCOUNTS", Context.MODE_PRIVATE)
+                                val editor = sharedPreferences.edit()
+                                editor.putString("USERID", result.getString("userid"))
+                                editor.apply()
                                 Toast.makeText(context, "Login Complete", Toast.LENGTH_SHORT).show()
+                                val intent = Intent(context, MainActivity::class.java)
+                                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                context.startActivity(intent)
+                                transitionPage(false)
                             }
-                            val intent = Intent(context, MainActivity::class.java)
-                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                            context.startActivity(intent)
+
                         } else {
                             runOnUiThread {
                                 transitionPage(false)
