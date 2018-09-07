@@ -22,6 +22,7 @@ import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
+import java.net.URLEncoder
 
 class PlaceActivity : AppCompatActivity() {
 
@@ -58,10 +59,21 @@ class PlaceActivity : AppCompatActivity() {
         val image3 = findViewById<ImageView>(R.id.img3)
 
 
-//        Picasso.get().load("https://placeimg.com/640/480/nature").into(image1)
-//        Picasso.get().load("https://placeimg.com/640/480/arch").into(image2)
-//        Picasso.get().load("https://placeimg.com/640/480/tech").into(image3)
         fetchFullDetails(this)
+
+        val sharedPreferences = getSharedPreferences("ACCOUNTS", Context.MODE_PRIVATE)
+        var userid =""
+        if(sharedPreferences.contains("USERID")){
+            userid = sharedPreferences.getString("USERID","");
+        }
+        println("PlaceID: $userid")
+
+        val comment = findViewById<EditText>(R.id.edtComment)
+
+        findViewById<Button>(R.id.btnComment).setOnClickListener{
+            addComment(this, comment.text.toString()
+                    ,placeid,userid)
+        }
 
 
     }
@@ -78,7 +90,7 @@ class PlaceActivity : AppCompatActivity() {
     fun fetchTerminal (context: Context, query:String, lat:String, lng:String) {
         runOnUiThread {
             transitionPage(true)
-            findViewById<TextView>(R.id.loadingText).text = "Loading Terminals..."
+            findViewById<TextView>(R.id.loadingText).text = "Loading ...."
         }
         val url = "https://treatout.000webhostapp.com/modules/api/geterminal.php?$query"
 
@@ -121,7 +133,6 @@ class PlaceActivity : AppCompatActivity() {
                                     intent.putExtra("PLACE_NAME", name)
                                     intent.putExtra("NAME", term.transportation)
                                     startActivity(intent)
-
                                 }
                                 termLayout.addView(termBtn)
                             }
@@ -149,7 +160,7 @@ class PlaceActivity : AppCompatActivity() {
     fun fetchRate (context: Context, query:String) {
         runOnUiThread {
             transitionPage(true)
-            findViewById<TextView>(R.id.loadingText).text = "Loading Terminals..."
+            findViewById<TextView>(R.id.loadingText).text = "Loading Ride Informations...."
         }
         val url = "https://treatout.000webhostapp.com/modules/api/getplacedetails.php?$query"
 
@@ -216,7 +227,7 @@ class PlaceActivity : AppCompatActivity() {
         val placeid:String = intent.getStringExtra("id")
 
         runOnUiThread{
-            findViewById<TextView>(R.id.loadingText).text = "Loading Place Details..."
+            findViewById<TextView>(R.id.loadingText).text = "Loading Details About Place..."
         }
 
         val url = "https://maps.googleapis.com/maps/api/place/details/json?placeid=$placeid&key=AIzaSyDWJ95wDORvWwB6B8kNzSNDfVSOeQc8W7k"
@@ -306,6 +317,45 @@ class PlaceActivity : AppCompatActivity() {
             }
 
             override fun onFailure(call: Call?, e: IOException?) {
+            }
+
+        })
+
+    }
+
+    fun addComment(context: Context, comment:String, placeid:String ,userid:String){
+        runOnUiThread {
+            transitionPage(true)
+            findViewById<TextView>(R.id.loadingText).text = "Saving Comment...."
+        }
+       var url = "https://treatout.000webhostapp.com/modules/api/addcommenttoplace.php?place_id=$placeid&comment=$comment&user_id=$userid"
+        url = URLEncoder.encode(url, "UTF-8");
+
+        val client = OkHttpClient()
+        val request = Request.Builder().url(url).build()
+
+        client.newCall(request).enqueue( object: Callback {
+
+            override fun onResponse(call: Call?, response: Response?) {
+
+                println(response)
+
+                runOnUiThread {
+                    reviewList.add( Review("Me",comment,0  as Number))
+                    adapter.notifyItemInserted(reviewList.size)
+                    transitionPage(false)
+                    Toast.makeText(context,"Added Comment",Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call?, e: IOException?) {
+                println("Failed Request")
+                fetchFullDetails(context)
+                runOnUiThread {
+                    transitionPage(false)
+                    Toast.makeText(context,"Unable to Add Comment",Toast.LENGTH_SHORT).show()
+                }
+
             }
 
         })
