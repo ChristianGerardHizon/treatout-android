@@ -138,6 +138,7 @@ class LoginActivity : AppCompatActivity() {
                                 val sharedPreferences = getSharedPreferences("ACCOUNTS", Context.MODE_PRIVATE)
                                 val editor = sharedPreferences.edit()
                                 editor.putString("USERID", result.getString("userid"))
+                                editor.putString("NAME", result.getString("name"))
                                 editor.apply()
                                 Toast.makeText(context, "Login Complete", Toast.LENGTH_SHORT).show()
                                 val intent = Intent(context, MainActivity::class.java)

@@ -1,8 +1,10 @@
 package com.treatout.travel.treatoutmobile.Adapters
 
 import android.content.Context
+import android.opengl.Visibility
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import com.treatout.travel.treatoutmobile.Classes.Review
 import com.treatout.travel.treatoutmobile.R
@@ -16,7 +18,13 @@ class ReviewAdapter ( val context: Context,val reviewList: ArrayList<Review>): R
         val review = reviewList[ p1 ]
         p0.itemView.user.text = review.name
         p0.itemView.comment.text = review.comment
+
         p0.itemView.reviewStar.rating = review.rating.toFloat()
+
+        if(review.rating.toFloat() < 1.0){
+            p0.itemView.reviewStar.visibility = View.GONE
+        }
+
 
 
     }

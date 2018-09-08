@@ -63,17 +63,23 @@ class PlaceActivity : AppCompatActivity() {
 
         val sharedPreferences = getSharedPreferences("ACCOUNTS", Context.MODE_PRIVATE)
         var userid =""
+        var name =""
         if(sharedPreferences.contains("USERID")){
             userid = sharedPreferences.getString("USERID","");
         }
-        println("PlaceID: $userid")
+        if(sharedPreferences.contains("NAME")){
+            name = sharedPreferences.getString("NAME","");
+        }
+        println("userID: $name")
 
         val comment = findViewById<EditText>(R.id.edtComment)
 
         findViewById<Button>(R.id.btnComment).setOnClickListener{
             addComment(this, comment.text.toString()
-                    ,placeid,userid)
+                    ,placeid,userid,name)
         }
+
+        getComments(this, placeid, name)
 
 
     }
@@ -101,7 +107,7 @@ class PlaceActivity : AppCompatActivity() {
 
             override fun onResponse(call: Call?, response: Response?) {
                 var body = response?.body()?.string()
-                println(body)
+//                println(body)
                 if (body != null) {
                     body = body.drop(1)
                     body = body.dropLast(1)
@@ -112,7 +118,7 @@ class PlaceActivity : AppCompatActivity() {
                         val terminals = JSONArrayToArray(arr)
                         for( terminal in terminals){
                             val obj = JSONObject(terminal)
-                            println(obj.toString())
+//                            println(obj.toString())
                             val term = Terminal(
                                     obj.getString("place_id"),
                                     obj.getString("fare_rate_max"),
@@ -174,7 +180,7 @@ class PlaceActivity : AppCompatActivity() {
                 if (body != null) {
                     body = body.drop(1)
                     body = body.dropLast(1)
-                    println(body)
+//                    println(body)
                     val result = JSONObject(body.toString())
                     if( result.has("data")){
                         try{
@@ -260,8 +266,8 @@ class PlaceActivity : AppCompatActivity() {
                     lat = location.getString("lat")
                     lng = location.getString("lng")
 
-                    println("LAT"+lat)
-                    println("LNG"+lng)
+//                    println("LAT"+lat)
+//                    println("LNG"+lng)
 
 
 //                    val schedule = result.get("weekday_text")
@@ -272,7 +278,7 @@ class PlaceActivity : AppCompatActivity() {
                         val photoArray = JSONArrayToArray(photos)
                         val reviewArray = JSONArrayToArray(result.getJSONArray("reviews"))
 
-                        println(reviewArray.toString())
+//                        println(reviewArray.toString())
 
                         for( review in reviewArray){
                             val rev = JSONObject(review)
@@ -323,13 +329,56 @@ class PlaceActivity : AppCompatActivity() {
 
     }
 
-    fun addComment(context: Context, comment:String, placeid:String ,userid:String){
+    fun getComments(context: Context,placeid: String,name:String){
+        val url = "https://treatout.000webhostapp.com/modules/api/getcommentsandrate.php?placeid=$placeid"
+
+        val client = OkHttpClient()
+        val request = Request.Builder().url(url).build()
+
+        client.newCall(request).enqueue( object: Callback {
+
+            override fun onResponse(call: Call?, response: Response?) {
+                var body = response?.body()?.string()
+
+                if( body != null ){
+                    body = "{\"result\":$body}"
+                    val jsonBody = JSONObject(body)
+                    val jArrayBody = jsonBody.getJSONArray("result")
+                    val jArray = JSONArrayToArray(jArrayBody)
+
+                    for( comment in jArray){
+                        println(comment)
+                        val commentObj = JSONObject(comment)
+                        runOnUiThread {
+                            reviewList.add( Review(commentObj.getString("username"),commentObj.getString("comment"),commentObj.get("rate")  as Number))
+                            adapter.notifyItemInserted(reviewList.size)
+                        }
+                    }
+
+                 }
+
+            }
+
+            override fun onFailure(call: Call?, e: IOException?) {
+                println("Failed Request")
+                fetchFullDetails(context)
+                runOnUiThread {
+                    Toast.makeText(context,"Unable to Fetch Comments",Toast.LENGTH_SHORT).show()
+                }
+
+            }
+
+        })
+
+    }
+
+    fun addComment(context: Context, comment:String, placeid:String ,userid:String, name:String){
         runOnUiThread {
             transitionPage(true)
             findViewById<TextView>(R.id.loadingText).text = "Saving Comment...."
         }
-       var url = "https://treatout.000webhostapp.com/modules/api/addcommenttoplace.php?place_id=$placeid&comment=$comment&user_id=$userid"
-        url = URLEncoder.encode(url, "UTF-8");
+        val commentEnc = URLEncoder.encode(comment, "UTF-8");
+       var url = "https://treatout.000webhostapp.com/modules/api/addcommenttoplace.php?place_id=$placeid&comment=$commentEnc&user_id=$userid"
 
         val client = OkHttpClient()
         val request = Request.Builder().url(url).build()
@@ -341,7 +390,7 @@ class PlaceActivity : AppCompatActivity() {
                 println(response)
 
                 runOnUiThread {
-                    reviewList.add( Review("Me",comment,0  as Number))
+                    reviewList.add( Review(name,comment,0  as Number))
                     adapter.notifyItemInserted(reviewList.size)
                     transitionPage(false)
                     Toast.makeText(context,"Added Comment",Toast.LENGTH_SHORT).show()
