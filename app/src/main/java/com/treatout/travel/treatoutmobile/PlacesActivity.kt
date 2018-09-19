@@ -153,10 +153,10 @@ class PlacesActivity : AppCompatActivity() {
 
             override fun onResponse(call: Call?, response: Response?) {
                 var body = response?.body()?.string()
-                if (body != null) {
+                println(body)
+                if (body != null && body != "[{\"data\":\"No results found.\"}]") {
                     body = body.drop(1)
                     body = body.dropLast(1)
-                    println(body)
 
                     val result = JSONObject(body)
                     if(result.get("data").toString().equals("No results found.")){
@@ -174,6 +174,11 @@ class PlacesActivity : AppCompatActivity() {
                         }
                     }
 
+                }else{
+                    runOnUiThread {
+                        findViewById<ConstraintLayout>(R.id.noItem).visibility = View.VISIBLE
+                        findViewById<RecyclerView>(R.id.placeList).visibility = View.GONE
+                    }
                 }
                 runOnUiThread {
                     transitionPage(false)

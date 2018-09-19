@@ -71,11 +71,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         if( place_lat != "" && place_lng != ""){
             val coordPlace = LatLng(place_lat.toDouble(), place_lng.toDouble())
-            mMap.addMarker(MarkerOptions().position(coordPlace).title(place_name))
+//            mMap.addMarker(MarkerOptions().position(coordPlace).title(place_name))
         }
 
         val coord = LatLng(lat.toDouble(), lng.toDouble())
-        mMap.addMarker(MarkerOptions().position(coord).title(name))
+//        mMap.addMarker(MarkerOptions().position(coord).title(name))
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coord,10f))
     }
 

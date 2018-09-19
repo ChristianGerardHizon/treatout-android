@@ -180,10 +180,15 @@ class PlaceActivity : AppCompatActivity() {
                 if (body != null) {
                     body = body.drop(1)
                     body = body.dropLast(1)
-//                    println(body)
+                    body = body.drop(1)
+                    body = body.dropLast(1)
+                    body = "$body}"
+                    println(body)
+                    try{
+
                     val result = JSONObject(body.toString())
                     if( result.has("data")){
-                        try{
+
                             val arr = JSONArray(result.get("data").toString())
                             val formattedArr = JSONArrayToArray(arr)
 
@@ -196,16 +201,18 @@ class PlaceActivity : AppCompatActivity() {
                                     findViewById<TextView>(R.id.placeRate).text = "P$min to P$max"
                                 }
                             }
-                        }catch (e: IOException){
-
-                        }
-
-
                     }else{
                         runOnUiThread{
                             findViewById<TextView>(R.id.placeRate).visibility = View.GONE
                         }
                     }
+                        }catch (e: IOException){
+                            runOnUiThread{
+                                findViewById<TextView>(R.id.placeRate).visibility = View.GONE
+                            }
+                        }
+
+
 
                 }
                runOnUiThread{
@@ -342,17 +349,23 @@ class PlaceActivity : AppCompatActivity() {
 
                 if( body != null ){
                     body = "{\"result\":$body}"
+                    println("BODY: $body")
                     val jsonBody = JSONObject(body)
-                    val jArrayBody = jsonBody.getJSONArray("result")
-                    val jArray = JSONArrayToArray(jArrayBody)
+                    try{
+                        val jArrayBody = jsonBody.getJSONArray("result")
+                        val jArray = JSONArrayToArray(jArrayBody)
 
-                    for( comment in jArray){
-                        println(comment)
-                        val commentObj = JSONObject(comment)
-                        runOnUiThread {
-                            reviewList.add( Review(commentObj.getString("username"),commentObj.getString("comment"),commentObj.get("rate")  as Number))
-                            adapter.notifyItemInserted(reviewList.size)
+                        for( comment in jArray){
+                            println(comment)
+                            val commentObj = JSONObject(comment)
+                            runOnUiThread {
+                                reviewList.add( Review(commentObj.getString("username"),commentObj.getString("comment"),commentObj.get("rate")  as Number))
+                                adapter.notifyItemInserted(reviewList.size)
+                            }
                         }
+
+                    }catch (e: IOException){
+                        println(e)
                     }
 
                  }

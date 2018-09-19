@@ -57,7 +57,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:ems="10"
-                            android:hint="Maximum Budget"
+                            android:hint="Minimum Budget"
                             android:inputType="numberDecimal" />
 
                         <EditText
@@ -65,7 +65,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:ems="10"
-                            android:hint="Minimum Budget"
+                            android:hint="Maximum Budget"
                             android:inputType="numberDecimal" />
 
                         <Button
