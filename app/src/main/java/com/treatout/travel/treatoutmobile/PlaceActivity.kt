@@ -107,11 +107,11 @@ class PlaceActivity : AppCompatActivity() {
 
             override fun onResponse(call: Call?, response: Response?) {
                 var body = response?.body()?.string()
-//                println(body)
+                println(body)
                 if (body != null) {
-                    body = body.drop(1)
-                    body = body.dropLast(1)
+                    body = body.drop(1).dropLast(1)
 
+                    println("Result $body")
                     val result = JSONObject(body)
                     if( result.has("terminals")){
                         val arr = JSONArray(result.get("terminals").toString())
